@@ -2,2056 +2,461 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>HU-Vorab-Check</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mein Auto-Assistent · Digitale Helfer für Autofahrer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --ink: #1a2332;
-    --paper: #f7f5f0;
-    --green: #2d8c5f;
-    --amber: #e0a83a;
-    --red: #c0392b;
-    --steel: #5b6b7d;
-    --card: #ffffff;
-    --accent: #e0a83a; /* Marken-Akzentfarbe, pro Partner überschreibbar */
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg:           #12141A;
+    --surface:      #1A1D26;
+    --surface2:     #20242F;
+    --blue:         #0EA5E9;
+    --blue-dim:     #0369A1;
+    --blue-glow:    rgba(14,165,233,0.10);
+    --blue-border:  rgba(14,165,233,0.22);
+    --blue-hover:   rgba(14,165,233,0.50);
+    --text:         #F8FAFC;
+    --text-muted:   #8896A8;
+    --border:       rgba(255,255,255,0.07);
+  }
 
   body {
+    background: var(--bg);
+    color: var(--text);
     font-family: 'Inter', sans-serif;
-    background: var(--paper);
-    color: var(--ink);
+    font-weight: 400;
+    line-height: 1.6;
     min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
   }
 
-  .app {
-    max-width: 480px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: var(--paper);
-  }
-
-  header {
-    padding: 20px 20px 16px;
-    background: var(--ink);
-    color: var(--paper);
-  }
-
-  .brand-row {
+  /* ── NAV ── */
+  nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-
-  .brand-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .partner-logo {
-    height: 28px;
-    max-width: 90px;
-    object-fit: contain;
-    border-radius: 4px;
-    background: rgba(247,245,240,0.92);
-    padding: 2px 4px;
-  }
-
-  .brand {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 19px;
-    letter-spacing: -0.01em;
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-  }
-  .brand .dot { color: var(--accent); }
-
-  .key-btn {
-    background: rgba(247,245,240,0.1);
-    border: none;
-    border-radius: 10px;
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(26,35,50,0.55);
-    align-items: center;
-    justify-content: center;
+    padding: 1.25rem 3rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(18,20,26,0.95);
+    backdrop-filter: blur(12px);
     z-index: 100;
-    padding: 24px;
   }
-  .modal-overlay.visible { display: flex; }
-  .modal-card {
-    background: var(--card);
-    border-radius: 16px;
-    padding: 22px;
-    width: 100%;
-    max-width: 360px;
-  }
-  .modal-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 17px;
-    margin-bottom: 8px;
-  }
-  .modal-text {
-    font-size: 13px;
-    color: var(--steel);
-    line-height: 1.5;
-    margin-bottom: 14px;
-  }
-  .modal-input {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid #d4cfc4;
-    border-radius: 10px;
-    font-size: 14px;
-    font-family: 'JetBrains Mono', monospace;
-    margin-bottom: 8px;
-    background: var(--paper);
-    color: var(--ink);
-  }
-  .modal-input:focus { outline: 2px solid var(--ink); border-color: transparent; }
-  .modal-error {
-    color: var(--red);
-    font-size: 12px;
-    min-height: 16px;
-    margin-bottom: 8px;
-  }
-  .modal-card .btn { margin-top: 4px; }
-  .modal-card .btn-skip { width: 100%; text-align: center; }
 
-  .progress-track {
+  .nav-logo {
     display: flex;
-    gap: 4px;
-    margin-top: 14px;
-  }
-  .progress-seg {
-    flex: 1;
-    height: 5px;
-    border-radius: 3px;
-    background: rgba(247,245,240,0.18);
-    transition: background 0.3s ease;
-  }
-  .progress-seg.done { background: var(--green); }
-  .progress-seg.active { background: var(--accent); }
-
-  .step-meta {
-    font-size: 12px;
-    color: rgba(247,245,240,0.6);
-    margin-top: 10px;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.04em;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
   }
 
-  main {
-    flex: 1;
-    padding: 24px 20px 100px;
+  .nav-logo-mark {
+    width: 33px;
+    height: 33px;
+    background: var(--blue);
+    border-radius: 8px;
     display: flex;
-    flex-direction: column;
-  }
-
-  .step-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 26px;
-    line-height: 1.2;
-    margin-bottom: 8px;
-  }
-
-  .step-hint {
-    font-size: 14px;
-    color: var(--steel);
-    line-height: 1.5;
-    margin-bottom: 24px;
-  }
-
-  .upload-zone {
-    border: 2px dashed #d4cfc4;
-    border-radius: 16px;
-    background: var(--card);
-    min-height: 220px;
-    display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    cursor: pointer;
-    overflow: hidden;
-    position: relative;
-    transition: border-color 0.2s;
+    font-size: 16px;
   }
-  .upload-zone.has-image {
-    border-style: solid;
-    border-color: #d4cfc4;
+
+  .nav-logo-text {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
   }
-  .upload-zone img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .upload-zone .icon {
-    width: 48px;
-    height: 48px;
-    color: var(--steel);
-  }
-  .upload-zone .label {
-    font-size: 14px;
-    color: var(--steel);
+  .nav-logo-text span { color: var(--blue); font-weight: 400; }
+
+  .nav-right { display: flex; gap: 2rem; align-items: center; }
+
+  .nav-link {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-decoration: none;
     font-weight: 500;
+    transition: color 0.2s;
   }
-  .upload-zone .retake {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    background: rgba(26,35,50,0.85);
-    color: var(--paper);
-    font-size: 12px;
-    font-weight: 500;
-    padding: 7px 14px;
-    border-radius: 20px;
+  .nav-link:hover { color: var(--text); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 5.5rem 3rem 3.5rem;
+    max-width: 880px;
+    margin: 0 auto;
   }
 
-  input[type=file] { display: none; }
-
-  .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .photo-tile {
-    aspect-ratio: 1;
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-    background: var(--card);
-  }
-  .photo-tile img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .photo-tile .remove-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: rgba(26,35,50,0.75);
-    color: var(--paper);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1;
-    cursor: pointer;
-  }
-  .photo-tile.add-tile {
-    border: 2px dashed #d4cfc4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .photo-tile.add-tile .icon {
-    width: 28px;
-    height: 28px;
-    color: var(--steel);
-  }
-  /* ── Checkliste ── */
-  .checklist-wrap {
-    margin: 20px 0 4px;
-    background: #fff;
-    border-radius: 12px;
-    padding: 4px 0;
-    border: 1.5px solid #e8e4dc;
-  }
-  .checklist-title {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--steel);
-    padding: 12px 16px 6px;
-  }
-  .checklist-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    border-top: 1px solid #f0ede6;
-    cursor: pointer;
-    transition: background 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .checklist-item:first-of-type { border-top: none; }
-  .checklist-item:active { background: #f7f5f0; }
-  .check-box {
-    width: 24px; height: 24px;
-    border-radius: 6px;
-    border: 2px solid #d4cfc4;
-    flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    transition: all 0.15s;
-  }
-  .check-box.checked {
-    background: var(--green);
-    border-color: var(--green);
-    color: #fff;
-  }
-  .check-label {
-    font-size: 14px;
-    color: var(--ink);
-    line-height: 1.4;
-  }
-  .check-label.checked { color: var(--steel); text-decoration: line-through; }
-
-  /* Wahrscheinlichkeits-Anzeige */
-  .prob-bar-wrap {
-    margin: 16px 0 0;
-    background: #fff;
-    border-radius: 12px;
-    padding: 16px;
-    border: 1.5px solid #e8e4dc;
-  }
-  .prob-bar-label {
-    font-size: 12px;
-    color: var(--steel);
-    margin-bottom: 8px;
-    font-weight: 600;
-  }
-  .prob-bar-track {
-    height: 10px;
-    background: #e8e4dc;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
-  .prob-bar-fill {
-    height: 100%;
-    border-radius: 6px;
-    transition: width 0.4s ease;
-  }
-  .prob-value {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 22px;
-    color: var(--ink);
-  }
-  .prob-hint {
-    font-size: 12px;
-    color: var(--steel);
-    margin-top: 4px;
-    font-style: italic;
-  }
-
-  .photo-grid-hint {
-    font-size: 12px;
-    color: var(--steel);
-    margin-top: 8px;
-  }
-
-  .free-text-input {
-    width: 100%;
-    margin-top: 14px;
-    padding: 12px 14px;
-    border: 1.5px solid #d4cfc4;
-    border-radius: 12px;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    color: var(--ink);
-    background: var(--card);
-    min-height: 84px;
-    resize: vertical;
-  }
-  .free-text-input:focus { outline: 2px solid var(--ink); border-color: transparent; }
-
-
-  .analysis-status {
-    margin-top: 16px;
-    padding: 14px 16px;
-    border-radius: 12px;
-    background: var(--card);
-    font-size: 13px;
-    color: var(--steel);
-    display: none;
-    align-items: center;
-    gap: 10px;
-  }
-  .analysis-status.visible { display: flex; }
-  .spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid #e5e0d5;
-    border-top-color: var(--ink);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .result-card {
-    margin-top: 16px;
-    border-radius: 12px;
-    background: var(--card);
-    padding: 16px;
-    display: none;
-  }
-  .result-card.visible { display: block; }
-  .result-status {
+  .hero-eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    margin-bottom: 8px;
-  }
-  .status-dot { width: 10px; height: 10px; border-radius: 50%; }
-  .status-dot.green { background: var(--green); }
-  .status-dot.amber { background: var(--amber); }
-  .status-dot.red { background: var(--red); }
-  .result-text {
-    font-size: 14px;
-    line-height: 1.55;
-    color: var(--ink);
-  }
-
-  .cost-estimate {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #ece7dc;
-  }
-  .cost-estimate-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 6px;
-  }
-  .cost-estimate-label {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--ink);
-  }
-  .cost-effort-badge {
-    font-size: 11px;
+    gap: 0.5rem;
+    font-size: 0.7rem;
     font-weight: 600;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-family: 'Inter', sans-serif;
-  }
-  .cost-effort-badge.klein { background: rgba(45,140,95,0.12); color: var(--green); }
-  .cost-effort-badge.mittel { background: rgba(224,168,58,0.18); color: #a9761f; }
-  .cost-effort-badge.gross { background: rgba(192,57,43,0.12); color: var(--red); }
-  .cost-estimate-range {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500;
-    font-size: 17px;
-    color: var(--ink);
-    margin-bottom: 6px;
-  }
-  .cost-estimate-note {
-    font-size: 13px;
-    color: var(--steel);
-    line-height: 1.5;
-    margin-bottom: 6px;
-  }
-  .cost-estimate-disclaimer {
-    font-size: 11px;
-    color: var(--steel);
-    line-height: 1.5;
-    font-style: italic;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: var(--blue-glow);
+    border: 1px solid var(--blue-border);
+    padding: 0.28rem 0.75rem;
+    border-radius: 100px;
+    margin-bottom: 1.75rem;
   }
 
-  footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-width: 480px;
+  .hero h1 {
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero h1 .accent { color: var(--blue); }
+
+  .hero-claim {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-sub {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    max-width: 500px;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    max-width: 880px;
+    margin: 3rem auto;
+  }
+
+  /* ── TOOLS ── */
+  .tools-section {
+    padding: 0 3rem 6rem;
+    max-width: 880px;
     margin: 0 auto;
-    padding: 14px 20px 22px;
-    background: linear-gradient(to top, var(--paper) 70%, transparent);
   }
 
-  .btn {
-    width: 100%;
-    padding: 16px;
-    border-radius: 14px;
-    border: none;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 16px;
-    cursor: pointer;
-    transition: opacity 0.15s, transform 0.1s;
-  }
-  .btn:active { transform: scale(0.98); }
-  .btn-primary {
-    background: var(--ink);
-    color: var(--paper);
-  }
-  .btn-primary:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
-  .btn-skip {
-    background: transparent;
-    color: var(--steel);
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 13px;
-    padding: 8px;
-    margin-top: 8px;
-    text-decoration: underline;
-  }
-
-  /* Report screen */
-  .report-header {
-    text-align: center;
-    padding: 8px 0 28px;
-  }
-  .plakette {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    margin: 0 auto 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    border: 6px solid;
-    position: relative;
-  }
-  .plakette.green { border-color: var(--green); }
-  .plakette.amber { border-color: var(--amber); }
-  .plakette.red { border-color: var(--red); }
-  .plakette-label {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    text-align: center;
-    line-height: 1.2;
-    padding: 0 10px;
-  }
-  .report-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 22px;
-    margin-bottom: 6px;
-  }
-  .report-sub {
-    font-size: 14px;
-    color: var(--steel);
-  }
-
-  .report-item {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-  }
-  .report-item-head {
+  .section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 6px;
-  }
-  .report-item-name {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-  }
-  .report-item-text {
-    font-size: 13px;
-    color: var(--steel);
-    line-height: 1.5;
+    margin-bottom: 1.75rem;
   }
 
-  .partner-note {
-    margin-top: 24px;
-    padding: 16px;
-    background: var(--ink);
-    color: var(--paper);
-    border-radius: 12px;
-    font-size: 13px;
-    line-height: 1.6;
-  }
-  .partner-note strong {
-    display: block;
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 15px;
-    margin-bottom: 4px;
+  .section-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
 
-  .disclaimer {
-    margin-top: 16px;
-    font-size: 11px;
-    color: var(--steel);
-    line-height: 1.6;
-    text-align: center;
-    padding: 0 8px;
+  .section-count {
+    font-size: 0.72rem;
+    color: var(--text-muted);
   }
 
-  /* Intro screen */
-  .intro-list {
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+    gap: 1rem;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.75rem;
+    text-decoration: none;
+    color: inherit;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .intro-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--card);
-    border-radius: 12px;
-    padding: 12px 14px;
-  }
-  .intro-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500;
-    font-size: 13px;
-    color: var(--ink);
-    background: var(--paper);
-    border: 1.5px solid #e5e0d5;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .intro-item-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 2px;
-  }
-  .intro-item-desc {
-    font-size: 12px;
-    color: var(--steel);
-    line-height: 1.4;
-  }
-  .intro-tip {
-    font-size: 12px;
-    color: var(--steel);
-    line-height: 1.6;
-    background: var(--card);
-    border-radius: 12px;
-    padding: 14px 16px;
-  }
-
-  /* Selection screen */
-  .select-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .select-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--card);
-    border-radius: 12px;
-    padding: 14px;
-    border: 1.5px solid transparent;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, background 0.2s, transform 0.18s;
     cursor: pointer;
-    transition: border-color 0.15s;
   }
-  .select-item.selected {
-    border-color: var(--ink);
+
+  .tool-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--blue), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
   }
-  .select-checkbox {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    border: 1.5px solid #d4cfc4;
-    flex-shrink: 0;
+
+  .tool-card:hover {
+    border-color: var(--blue-hover);
+    background: var(--surface2);
+    transform: translateY(-2px);
+  }
+  .tool-card:hover::after { opacity: 1; }
+
+  .tool-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .tool-icon {
+    width: 42px;
+    height: 42px;
+    background: var(--blue-glow);
+    border: 1px solid var(--blue-border);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 1.25rem;
   }
-  .select-checkbox.checked {
-    background: var(--ink);
-    border-color: var(--ink);
-  }
-  .select-order {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500;
-    font-size: 13px;
-    color: var(--paper);
-  }
-  .select-item-title {
-    font-family: 'Space Grotesk', sans-serif;
+
+  .tool-badge {
+    font-size: 0.6rem;
     font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.22rem 0.6rem;
+    border-radius: 100px;
   }
-  .select-item-desc {
-    font-size: 12px;
-    color: var(--steel);
-    line-height: 1.4;
+
+  .badge-live  { background: rgba(34,197,94,0.1);  color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+  .badge-beta  { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+  .badge-neu   { background: var(--blue-glow);     color: var(--blue); border: 1px solid var(--blue-border); }
+
+  .tool-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+  }
+
+  .tool-tagline {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .tool-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .tool-price {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+  .tool-price strong { color: var(--text); font-weight: 600; }
+
+  .tool-arrow {
+    font-size: 0.9rem;
+    color: var(--blue);
+    opacity: 0.5;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .tool-card:hover .tool-arrow { opacity: 1; transform: translateX(3px); }
+
+  /* Featured */
+  .tool-card.featured {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    gap: 1.5rem;
+    align-items: flex-start;
+    border-color: var(--blue-border);
+    background: linear-gradient(135deg, var(--surface) 0%, rgba(14,165,233,0.05) 100%);
+  }
+
+  .tool-card.featured .tool-icon {
+    width: 48px; height: 48px;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .tool-card.featured .tool-body { flex: 1; display: flex; flex-direction: column; }
+
+  .tool-card.featured .tool-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.4rem;
+  }
+
+  /* ── TRUST BAR ── */
+  .trust-bar {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 3rem;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .trust-item span { color: var(--blue); font-size: 1rem; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.75rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-brand {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .footer-brand span { color: var(--blue); font-weight: 600; }
+
+  .footer-links { display: flex; gap: 1.75rem; }
+  .footer-links a {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--text); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 680px) {
+    nav { padding: 1rem 1.25rem; }
+    .hero { padding: 3.5rem 1.25rem 2.5rem; }
+    .tools-section { padding: 0 1.25rem 4rem; }
+    .tools-grid { grid-template-columns: 1fr; }
+    .tool-card.featured { flex-direction: column; }
+    .trust-bar { padding: 1.25rem; gap: 1.5rem; }
+    footer { padding: 1.5rem 1.25rem; flex-direction: column; gap: 1rem; text-align: center; }
   }
 </style>
 </head>
 <body>
 
-<div class="app">
-  <header>
-    <div class="brand-row">
-      <div class="brand-group">
-        <img id="partnerLogo" class="partner-logo" alt="" style="display:none;">
-        <div class="brand">HU-Vorab<span class="dot">·</span>Check</div>
-      </div>
-      <button class="key-btn" id="keyBtn" title="API-Key">🔑</button>
-    </div>
-    <div class="progress-track" id="progressTrack"></div>
-    <div class="step-meta" id="stepMeta">SCHRITT 1 / 6</div>
-  </header>
-
-  <main id="main">
-    <!-- Dynamic content rendered here -->
-  </main>
-
-  <footer id="footer">
-    <button class="btn btn-primary" id="primaryBtn">Foto aufnehmen</button>
-  </footer>
-
-  <div class="modal-overlay" id="keyModal">
-    <div class="modal-card">
-      <div class="modal-title">API-Key</div>
-      <div class="modal-text">Für den Testbetrieb wird ein Anthropic API-Key benötigt. Der Key wird nur lokal auf diesem Gerät gespeichert.</div>
-      <input type="text" id="keyInput" class="modal-input" placeholder="sk-ant-..." autocapitalize="off" autocorrect="off" spellcheck="false">
-      <div class="modal-error" id="keyError"></div>
-      <button class="btn btn-primary" id="keySaveBtn">Speichern</button>
-      <button class="btn-skip" id="keyCancelBtn">Abbrechen</button>
-    </div>
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark">🚗</div>
+    <span class="nav-logo-text">Mein <span>Auto-Assistent</span></span>
+  </a>
+  <div class="nav-right">
+    <a href="https://rc-digital.de" class="nav-link">rc-digital.de</a>
   </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">✦ Digitale Tools für Autofahrer</div>
+  <h1>Dein <span class="accent">Auto-Assistent.</span></h1>
+  <div class="hero-claim">Für den Moment wenn es drauf ankommt.</div>
+  <p class="hero-sub">
+    KI-gestützte Werkzeuge die dir helfen — beim Unfall, vor der HU oder beim Autokauf. Schnell, verständlich, ohne Fachwissen.
+  </p>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-item"><span>⚡</span> Sofort nutzbar</div>
+  <div class="trust-item"><span>🔒</span> Keine Anmeldung nötig</div>
+  <div class="trust-item"><span>🤖</span> KI-gestützt</div>
+  <div class="trust-item"><span>🇩🇪</span> Made in Germany</div>
 </div>
 
-<script>
-// ---------------------------------------------------------
-// HU-Vorab-Check — MVP
-// Single-file, ES5-compatible (iOS/Safari)
-// ---------------------------------------------------------
-//
-// PRICING-ROADMAP (Notiz für Weiterentwicklung):
-// - Baukasten-Prinzip: Nutzer wählt frei aus den Kategorien.
-// - Geplant: Standard-Kategorien = Basis-Preisbeitrag,
-//   "Eigener Prüfpunkt" (Kategorie 'freifeld') = höherer Preisbeitrag,
-//   da individuelle Diagnose + zukünftig Kostenschätzung (siehe TODO
-//   bei der Kategorie-Definition weiter unten).
-// - state.selectedOrder.length liefert die Basis für eine spätere
-//   Preisanzeige/Stufenlogik im Auswahl-Screen.
-// ---------------------------------------------------------
-
-// ---------------------------------------------------------
-// Partner-Konfiguration (Pilotstationen)
-// Aufruf z.B. mit ?partner=station1 oder ?partner=station2
-// ---------------------------------------------------------
-var PARTNER_CONFIG = {
-  station1: {
-    name: 'GTÜ Kfz-Prüfservice Oberboihingen (Ing.-Büro Steffen Höhn)',
-    contact: 'Tel. 07022 2165282 · info@gtue-oberboihingen.de',
-    address: 'Daimlerstr. 15, 72644 Oberboihingen',
-    // Logo liegt im Repo-Root (uri2503/auto_check_hu/gtue-logo.jpeg)
-    logoUrl: 'https://uri2503.github.io/auto_check_hu/gtue-logo.jpeg',
-    accentColor: '#E2001A' // GTÜ-Rot
-  },
-  station2: {
-    name: 'Beispiel GTÜ-Prüfstelle',
-    contact: 'Tel. 0987 / 654321 · kontakt@beispiel-pruefstelle.de',
-    address: 'Beispielweg 2, 54321 Beispielort',
-    logoUrl: '',
-    accentColor: ''
-  }
-};
-
-var DEFAULT_PARTNER = {
-  name: 'deiner Werkstatt',
-  contact: '',
-  address: '',
-  logoUrl: '',
-  accentColor: ''
-};
-
-function getPartner() {
-  var params = new URLSearchParams(window.location.search);
-  var key = params.get('partner');
-  if (key && PARTNER_CONFIG[key]) {
-    return PARTNER_CONFIG[key];
-  }
-  return DEFAULT_PARTNER;
-}
-
-// ---------------------------------------------------------
-// API-Key Verwaltung (lokal im Browser, analog CrashGuide)
-// Nur für Pilot-/Testbetrieb mit wenigen Testern gedacht!
-// ---------------------------------------------------------
-function getApiKey() { return localStorage.getItem('huc_api_key') || ''; }
-function saveApiKey(k) { localStorage.setItem('huc_api_key', k.trim()); }
-
-var partner = getPartner();
-
-// ── SUPABASE LEAD TRACKING ──
-var SUPABASE_URL = 'https://ysqzdqazcgyuzdorauiq.supabase.co';
-var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzcXpkcWF6Y2d5dXpkb3JhdWlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5ODM0NzcsImV4cCI6MjA5NTU1OTQ3N30.u5cbSVniUl5Zvlf2rdpnjtvDyKvv9csmPwvdtnEwWzE';
-
-function trackLead(event) {
-  var kz = state.kennzeichen;
-  if (!kz) return;
-  var params = new URLSearchParams(window.location.search);
-  var partnerId = params.get('partner') || 'station1';
-  fetch(SUPABASE_URL + '/rest/v1/hu_leads', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify({
-      kennzeichen: kz,
-      partner_id: partnerId,
-      event: event,
-      hu_faellig: state.huFaellig || null
-    })
-  }).catch(function() {});
-}
-
-
-// Partner-Branding anwenden: Logo + Akzentfarbe
-(function applyPartnerBranding() {
-  if (partner.logoUrl) {
-    var logoEl = document.getElementById('partnerLogo');
-    logoEl.src = partner.logoUrl;
-    logoEl.alt = partner.name;
-    logoEl.style.display = 'block';
-    logoEl.onerror = function () {
-      // Logo nicht ladbar (z.B. falsche URL) -> ausblenden, kein kaputtes Bild zeigen
-      logoEl.style.display = 'none';
-    };
-  }
-  if (partner.accentColor) {
-    document.documentElement.style.setProperty('--accent', partner.accentColor);
-  }
-})();
-
-var CATEGORIES = [
-  {
-    id: 'eingang',
-    title: 'Eingangsfotos',
-    introText: 'Rundum-Fotos: Front, Seite links, Seite rechts, Heck',
-    hint: 'Fotografiere dein Fahrzeug rundum: einmal von vorne, von beiden Seiten und von hinten. Diese Fotos geben einen ersten Gesamteindruck.',
-    checkPoints: 'Gesamtzustand der Karosserie, Lackzustand, Stoßfänger, sichtbare Unfallspuren oder Vorschäden, Reifenzustand auf den Gesamtaufnahmen, vorhandene und gut lesbare amtliche Kennzeichen, scharfkantige oder abstehende Anbauteile (z.B. beschädigte Anbauten), allgemeiner Eindruck (gepflegt/ungepflegt)',
-    maxPhotos: 5
-  },
-  {
-    id: 'reifen',
-    title: 'Reifen',
-    introText: 'Foto vom Reifenprofil eines Vorderrads',
-    hint: 'Fotografiere ein Vorderrad von vorne, sodass Profil und Lauffläche gut sichtbar sind. Bitte mit guter Beleuchtung, möglichst senkrecht von oben auf das Profil.',
-    checkPoints: 'Profiltiefe (gesetzliches Mindestmaß 1,6 mm in den Hauptprofilrillen), ungleichmäßige Abnutzung, Risse oder Einschnitte in der Flanke, Beulen, sichtbare Beschädigungen, Alter (DOT-Nummer falls erkennbar), Zustand der Felge (Schäden, Verformungen)',
-    maxPhotos: 5,
-    checklist: [
-      { id: 'profil_vl', label: 'Vorne links: Profiltiefe mind. 1,6 mm (Verschleißanzeiger nicht erreicht)' },
-      { id: 'profil_vr', label: 'Vorne rechts: Profiltiefe mind. 1,6 mm' },
-      { id: 'profil_hl', label: 'Hinten links: Profiltiefe mind. 1,6 mm' },
-      { id: 'profil_hr', label: 'Hinten rechts: Profiltiefe mind. 1,6 mm' },
-      { id: 'flanken', label: 'Keine sichtbaren Risse, Beulen oder Beschädigungen an den Flanken' },
-      { id: 'alter', label: 'Reifenalter unter 6 Jahre (DOT-Nummer prüfen)' }
-    ]
-  },
-  {
-    id: 'beleuchtung',
-    title: 'Beleuchtung',
-    introText: 'Foto der Leuchten bei eingeschaltetem Licht',
-    hint: 'Fotografiere die Front- und Heckleuchten bei eingeschaltetem Licht (Abblendlicht, Blinker, Rücklicht). Am besten in der Dämmerung oder Garage.',
-    checkPoints: 'Funktion aller Leuchtmittel inkl. Kennzeichenleuchte, gleiche Lichtstärke bei paarweise verbauten Leuchten, Zustand der Leuchtengehäuse/Streuscheiben (Risse, Trübung, Kondenswasser, Steinschläge, blinde Reflektoren), korrekte Befestigung, vorhandenes Kennzeichen',
-    maxPhotos: 5,
-    checklist: [
-      { id: 'abblend', label: 'Abblendlicht links & rechts funktioniert' },
-      { id: 'standlicht', label: 'Standlicht vorne & hinten funktioniert' },
-      { id: 'blinker', label: 'Blinker alle 4 Richtungen funktionieren' },
-      { id: 'bremslicht', label: 'Bremslicht leuchtet beim Treten' },
-      { id: 'ruecklicht', label: 'Rücklicht beidseitig funktioniert' },
-      { id: 'kennzeichen', label: 'Kennzeichenleuchte funktioniert' },
-      { id: 'kennzeichen_vorhanden', label: 'Amtliches Kennzeichen vorne & hinten vorhanden' }
-    ]
-  },
-  {
-    id: 'bremsanlage',
-    title: 'Bremsanlage (sichtbar)',
-    introText: 'Foto der Bremsanlage durch die Felge',
-    hint: 'Fotografiere durch die Felge auf die Bremsscheibe und den Bremssattel, falls einsehbar. Sonst: allgemeines Foto vom Radkasten.',
-    checkPoints: 'Sichtbare Riefen oder starker Rost auf der Bremsscheibe, Zustand der Bremsbeläge falls erkennbar, Undichtigkeiten/Feuchtigkeit an Bremssattel oder Bremsleitungen',
-    maxPhotos: 5,
-    checklist: [
-      { id: 'scheibe_vl', label: 'Bremsscheibe vorne links: keine tiefen Riefen, kein starker Rost' },
-      { id: 'scheibe_vr', label: 'Bremsscheibe vorne rechts: keine tiefen Riefen, kein starker Rost' },
-      { id: 'belaege', label: 'Bremsbeläge sichtbar noch ausreichend stark' },
-      { id: 'sattel', label: 'Bremssattel trocken, keine Leckage sichtbar' },
-      { id: 'leitungen', label: 'Bremsleitungen/-schläuche ohne sichtbare Schäden' },
-      { id: 'handbremse', label: 'Handbremse / Feststellbremse funktioniert' }
-    ]
-  },
-  {
-    id: 'karosserie',
-    title: 'Karosserie & Korrosion',
-    introText: 'Foto von Schwellern und Radläufen',
-    hint: 'Fotografiere Schweller, Radläufe und sichtbare Schweißnähte. Achte auf gute Beleuchtung, am besten von der Seite leuchten lassen.',
-    checkPoints: 'Durchrostung an tragenden Teilen — insbesondere Bodengruppe, Schweller, Längsträger, Federbeinaufnahmen (Motorraum und Kofferraum), Auspuffanlage —, Domlager, größere Beulen oder Lackschäden mit Substanzverlust',
-    maxPhotos: 5
-  },
-  {
-    id: 'scheiben',
-    title: 'Scheiben & Wischer',
-    introText: 'Foto der Windschutzscheibe und Wischerblätter',
-    hint: 'Fotografiere die Windschutzscheibe von innen sowie die Wischerblätter von außen.',
-    checkPoints: 'Risse, Kratzer oder Steinschläge im Sichtfeld der Frontscheibe, Zustand der Wischerblätter/-gummis, Funktion der Waschanlage (falls testbar), Zustand und Vollständigkeit der Außenspiegel',
-    maxPhotos: 5
-  },
-  {
-    id: 'fahrwerk',
-    title: 'Fahrwerk / Stoßdämpfer',
-    introText: 'Foto der Stoßdämpfer von der Seite',
-    hint: 'Fotografiere die Stoßdämpfer von der Seite, möglichst nah, um Ölspuren oder Undichtigkeiten erkennen zu können.',
-    checkPoints: 'Ölaustritt an den Dämpfern, sichtbare Beschädigungen an Federn oder Lagern, Spuren von Anschlägen',
-    maxPhotos: 5
-  },
-  {
-    id: 'achsen',
-    title: 'Achsen / Achsträger',
-    introText: 'Foto von Vorder- und Hinterachse von unten',
-    hint: 'Fotografiere Vorder- und Hinterachse von unten (z.B. auf der Hebebühne oder mit Handy unter das Fahrzeug). Achsträger, Querlenker und Lagerstellen sollten erkennbar sein.',
-    checkPoints: 'Korrosion oder Anrisse am Achsträger, Zustand der Querlenker und Gummilager, sichtbares Spiel oder Beschädigungen an Gelenken, allgemeiner Pflegezustand des Fahrwerksbereichs',
-    maxPhotos: 5
-  },
-  {
-    // PRICING-HINWEIS: Diese Kategorie soll im Pricing-Modell höher bepreist werden
-    // als die Standard-Kategorien, da sie individuelle Diagnose-Tiefe liefert
-    // (inkl. Kostenschätzung, siehe costEstimate).
-    id: 'freifeld',
-    title: 'Eigener Prüfpunkt',
-    introText: 'Optional: eigene Fotos + Beschreibung, z.B. Unterboden oder Bremsleitungen',
-    hint: 'Falls dir an deinem Fahrzeug etwas Bestimmtes aufgefallen ist (z.B. eine Stelle am Unterboden, verrostete Bremsleitungen, ein Geräusch mit sichtbarer Ursache), kannst du hier Fotos hochladen und kurz beschreiben, worauf geachtet werden soll.',
-    checkPoints: 'Die vom Nutzer beschriebene Stelle bzw. das beschriebene Problem, sowie alles weitere auf den Fotos erkennbare, das für die HU relevant sein könnte',
-    maxPhotos: 5,
-    freeText: true,
-    freeTextPlaceholder: 'z.B. "Anrostung am Unterboden hinten links, Bremsleitung wirkt angerostet"',
-    costEstimate: true
-  }
-];
-
-var state = {
-  step: -1,
-  selectedOrder: [],
-  images: {},
-  results: {},
-  checks: {},   // id -> { checkId: true/false }
-  freeText: '',
-  loading: false,
-  analysisDone: false,
-  kennzeichen: '',   // aus URL ?kz=
-  huFaellig: ''      // aus URL ?hu=
-};
-
-// KZ + HU-Datum aus URL übernehmen (nach state-Deklaration!)
-(function readUrlParams() {
-  var params = new URLSearchParams(window.location.search);
-  var kz = params.get('kz') || '';
-  var hu = params.get('hu') || '';
-  state.kennzeichen = kz ? kz.toUpperCase() : '';
-  state.huFaellig   = hu || '';
-})();
-
-function getCategoryById(id) {
-  for (var i = 0; i < CATEGORIES.length; i++) {
-    if (CATEGORIES[i].id === id) return CATEGORIES[i];
-  }
-  return null;
-}
-
-function selectedCategories() {
-  var arr = [];
-  for (var i = 0; i < state.selectedOrder.length; i++) {
-    var c = getCategoryById(state.selectedOrder[i]);
-    if (c) arr.push(c);
-  }
-  return arr;
-}
-
-var els = {
-  main: document.getElementById('main'),
-  footer: document.getElementById('footer'),
-  primaryBtn: document.getElementById('primaryBtn'),
-  progressTrack: document.getElementById('progressTrack'),
-  stepMeta: document.getElementById('stepMeta')
-};
-
-function buildProgress() {
-  els.progressTrack.innerHTML = '';
-  var total = state.selectedOrder.length;
-  if (total === 0) return;
-  var numStep = (state.step === 'analyse' || state.step === -1) ? -1 : state.step;
-  for (var i = 0; i < total; i++) {
-    var seg = document.createElement('div');
-    seg.className = 'progress-seg';
-    if (i < numStep) seg.className += ' done';
-    if (i === numStep) seg.className += ' active';
-    if (state.step === 'analyse') seg.className += ' done'; // alle fertig
-    els.progressTrack.appendChild(seg);
-  }
-}
-
-function renderIntro() {
-  els.stepMeta.textContent = 'AUSWAHL';
-
-  var html = '';
-  html += '<div class="step-title">Dein §29-Vorab-Check</div>';
-  html += '<div class="step-hint">Dieser Check erhöht die Wahrscheinlichkeit einer erfolgreichen HU-Prüfung. Er ersetzt keine amtliche Untersuchung und ist unverbindlich. Wähle die Bereiche die du selbst prüfen möchtest.</div>';
-
-  html += '<div class="select-list">';
-  for (var i = 0; i < CATEGORIES.length; i++) {
-    var cat = CATEGORIES[i];
-    var orderIdx = state.selectedOrder.indexOf(cat.id);
-    var selected = orderIdx !== -1;
-    html += '<div class="select-item' + (selected ? ' selected' : '') + '" data-cat="' + cat.id + '">';
-    html += '<div class="select-checkbox' + (selected ? ' checked' : '') + '">';
-    if (selected) html += '<div class="select-order">' + (orderIdx + 1) + '</div>';
-    html += '</div>';
-    html += '<div class="select-item-text">';
-    html += '<div class="select-item-title">' + cat.title + '</div>';
-    html += '<div class="select-item-desc">' + cat.introText + '</div>';
-    html += '</div>';
-    html += '</div>';
-  }
-  html += '</div>';
-
-  html += '<div class="intro-tip">Tipp: Du kannst direkt mit der Kamera fotografieren oder vorhandene Fotos aus deiner Mediathek bzw. Dateien-App verwenden. Jeder Punkt kann auch im Wizard noch übersprungen werden.</div>';
-
-  els.main.innerHTML = html;
-
-  var items = document.querySelectorAll('.select-item');
-  for (var ii = 0; ii < items.length; ii++) {
-    items[ii].addEventListener('click', function (e) {
-      var catId = e.currentTarget.getAttribute('data-cat');
-      var idx = state.selectedOrder.indexOf(catId);
-      if (idx === -1) {
-        state.selectedOrder.push(catId);
-      } else {
-        state.selectedOrder.splice(idx, 1);
-      }
-      render();
-    });
-  }
-
-  var count = state.selectedOrder.length;
-  var startLabel = count === 0 ? 'Bitte mindestens einen Bereich wählen' : 'Check starten (' + count + ' ' + (count === 1 ? 'Bereich' : 'Bereiche') + ')';
-  els.footer.innerHTML = '<button class="btn btn-primary" id="startBtn"' + (count === 0 ? ' disabled' : '') + '>' + startLabel + '</button>';
-
-  var startBtn = document.getElementById('startBtn');
-  if (!startBtn.disabled) {
-    startBtn.addEventListener('click', function () {
-      state.step = 0;
-      render();
-    });
-  }
-}
-
-function render() {
-  buildProgress();
-
-  if (state.step === -1) {
-    renderIntro();
-    return;
-  }
-
-  if (state.step === 'analyse') {
-    renderAnalyseScreen();
-    return;
-  }
-
-  var chosen = selectedCategories();
-
-  if (state.step >= chosen.length) {
-    renderReport();
-    return;
-  }
-
-  var cat = chosen[state.step];
-  if (!cat) { render(); return; } // Sicherheitsnetz
-  els.stepMeta.textContent = 'SCHRITT ' + (state.step + 1) + ' / ' + chosen.length + ' · ' + cat.title.toUpperCase();
-
-  var imgs = state.images[cat.id] || [];
-  var result = state.results[cat.id];
-  var maxPhotos = cat.maxPhotos || 5;
-
-  var html = '';
-  html += '<div class="step-title">' + cat.title + '</div>';
-  html += '<div class="step-hint">' + cat.hint + '</div>';
-
-  html += '<div class="photo-grid" id="photoGrid">';
-  for (var pi = 0; pi < imgs.length; pi++) {
-    html += '<div class="photo-tile">';
-    html += '<img src="' + imgs[pi] + '" alt="' + cat.title + ' ' + (pi + 1) + '">';
-    html += '<div class="remove-btn" data-idx="' + pi + '">&times;</div>';
-    html += '</div>';
-  }
-  if (imgs.length < maxPhotos) {
-    html += '<div class="photo-tile add-tile" id="addTile">' + iconCamera() + '</div>';
-  }
-  html += '</div>';
-  html += '<div class="photo-grid-hint">' + imgs.length + ' / ' + maxPhotos + ' Fotos · Foto antippen oder neues hinzufügen</div>';
-
-  // Checkliste für TOP 3 Kategorien
-  if (cat.checklist && cat.checklist.length > 0) {
-    var catChecks = state.checks[cat.id] || {};
-    var checkedCount = 0;
-    // Vorher zählen für Balken
-    for (var ci = 0; ci < cat.checklist.length; ci++) {
-      if (catChecks[cat.checklist[ci].id] === true) checkedCount++;
-    }
-
-    // ── Wahrscheinlichkeitsbalken ZUERST (sichtbar ohne Scrollen) ──
-    var total = cat.checklist.length;
-    var pct = total > 0 ? Math.round((checkedCount / total) * 90) : 0;
-    var barColor = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
-    html += '<div class="prob-bar-wrap">';
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">';
-    html += '<div class="prob-bar-label" style="margin-bottom:0;">Selbst-Check Wahrscheinlichkeit</div>';
-    html += '<div class="prob-value" style="margin-top:0;">' + pct + ' %</div>';
-    html += '</div>';
-    html += '<div class="prob-bar-track"><div class="prob-bar-fill" style="width:' + pct + '%;background:' + barColor + ';"></div></div>';
-    if (checkedCount === 0) {
-      html += '<div class="prob-hint">Hake ab was du geprüft hast – die Wahrscheinlichkeit steigt mit jedem Punkt.</div>';
-    } else if (checkedCount === total) {
-      html += '<div class="prob-hint">Alle Punkte geprüft – maximale Vorbereitung.</div>';
-    } else {
-      html += '<div class="prob-hint">' + checkedCount + ' von ' + total + ' Punkten geprüft.</div>';
-    }
-    html += '</div>';
-
-    // ── Checkliste darunter ──
-    html += '<div class="checklist-wrap">';
-    html += '<div class="checklist-title">§29 Selbst-Check – abhaken was geprüft</div>';
-    for (var ci = 0; ci < cat.checklist.length; ci++) {
-      var citem = cat.checklist[ci];
-      var isChecked = catChecks[citem.id] === true;
-      html += '<div class="checklist-item" data-cat="' + cat.id + '" data-check="' + citem.id + '">';
-      html += '<div class="check-box' + (isChecked ? ' checked' : '') + '">' + (isChecked ? '✓' : '') + '</div>';
-      html += '<div class="check-label' + (isChecked ? ' checked' : '') + '">' + citem.label + '</div>';
-      html += '</div>';
-    }
-    html += '</div>';
-  }
-
-  if (cat.freeText) {
-    html += '<textarea id="freeTextInput" class="free-text-input" placeholder="' + cat.freeTextPlaceholder + '">' + escapeHtml(state.freeText || '') + '</textarea>';
-  }
-
-  html += '<input type="file" id="fileInput" accept="image/*" multiple>';
-
-  html += '<div class="analysis-status' + (state.loading ? ' visible' : '') + '" id="analysisStatus">';
-  html += '<div class="spinner"></div><div>Analyse läuft …</div>';
-  html += '</div>';
-
-  if (result) {
-    html += '<div class="result-card visible">';
-    html += '<div class="result-status"><span class="status-dot ' + result.status + '"></span>' + statusLabel(result.status) + '</div>';
-    html += '<div class="result-text">' + escapeHtml(result.text) + '</div>';
-    html += renderCostEstimate(result);
-    html += '</div>';
-  }
-
-  els.main.innerHTML = html;
-
-  var addTile = document.getElementById('addTile');
-  if (addTile) {
-    addTile.addEventListener('click', function () {
-      document.getElementById('fileInput').click();
-    });
-  }
-
-  // Checklisten-Klicks
-  var checkItems = document.querySelectorAll('.checklist-item');
-  for (var ci2 = 0; ci2 < checkItems.length; ci2++) {
-    checkItems[ci2].addEventListener('click', function(e) {
-      var catId = e.currentTarget.getAttribute('data-cat');
-      var checkId = e.currentTarget.getAttribute('data-check');
-      if (!state.checks[catId]) state.checks[catId] = {};
-      state.checks[catId][checkId] = !state.checks[catId][checkId];
-      render();
-    });
-  }
-  document.getElementById('fileInput').addEventListener('change', onFilesSelected);
-
-  var removeBtns = document.querySelectorAll('.remove-btn');
-  for (var ri = 0; ri < removeBtns.length; ri++) {
-    removeBtns[ri].addEventListener('click', function (e) {
-      var idx = parseInt(e.target.getAttribute('data-idx'), 10);
-      var arr = state.images[cat.id] || [];
-      arr.splice(idx, 1);
-      state.images[cat.id] = arr;
-      state.results[cat.id] = null;
-      render();
-    });
-  }
-
-  if (cat.freeText) {
-    var freeTextEl = document.getElementById('freeTextInput');
-    var freeTextAtFocus = state.freeText;
-    freeTextEl.addEventListener('input', function (e) {
-      state.freeText = e.target.value;
-    });
-    freeTextEl.addEventListener('blur', function (e) {
-      if (state.results[cat.id] && e.target.value !== freeTextAtFocus) {
-        state.results[cat.id] = null;
-        render();
-      }
-    });
-  }
-
-  // Footer
-  var hasText = cat.freeText && state.freeText && state.freeText.trim().length > 0;
-  var hasContent = imgs.length > 0 || hasText;
-  var pendingAnalysis = hasContent && !result && !state.loading;
-
-  var isLastStep = (state.step === chosen.length - 1);
-  var footerHtml = '';
-  if (state.loading) {
-    footerHtml += '<button class="btn btn-primary" id="primaryBtn" disabled>Lädt …</button>';
-  } else if (!hasContent) {
-    // Noch keine Fotos: Weiter trotzdem erlauben (kann skippen)
-    var lbl = isLastStep ? '🔍 Jetzt alle analysieren' : 'Weiter';
-    footerHtml += '<button class="btn btn-primary" id="primaryBtn">' + lbl + '</button>';
-  } else {
-    // Fotos vorhanden: Weiter oder Analysieren
-    var lbl = isLastStep ? '🔍 Jetzt alle analysieren' : 'Weiter →';
-    footerHtml += '<button class="btn btn-primary" id="primaryBtn">' + lbl + '</button>';
-  }
-  footerHtml += '<button class="btn-skip" id="skipBtn">Überspringen</button>';
-  els.footer.innerHTML = footerHtml;
-
-  var pBtn = document.getElementById('primaryBtn');
-  if (pBtn && !pBtn.disabled) {
-    pBtn.addEventListener('click', function () {
-      var chosen = selectedCategories();
-      if (state.step === chosen.length - 1) {
-        // Letzter Schritt → Analyse-Screen starten
-        state.step = 'analyse';
-        render();
-      } else {
-        state.step++;
-        render();
-      }
-    });
-  }
-  // analyzeBtn entfernt – Analyse läuft gesammelt am Ende
-  document.getElementById('skipBtn').addEventListener('click', function () {
-    state.step++;
-    render();
-  });
-}
-
-function statusLabel(status) {
-  if (status === 'green') return 'Unauffällig';
-  if (status === 'amber') return 'Beobachten';
-  if (status === 'red') return 'Möglicher Mangel';
-  return 'Keine Einschätzung';
-}
-
-function effortLabel(cat) {
-  if (cat === 'klein') return 'Kleinreparatur';
-  if (cat === 'mittel') return 'Größere Arbeiten';
-  if (cat === 'gross') return 'Umfangreiche Reparatur';
-  return null;
-}
-
-function formatEuro(n) {
-  return Number(n).toLocaleString('de-DE');
-}
-
-function renderCostEstimate(result) {
-  if (result.kosten_min === undefined && result.kosten_max === undefined && !result.aufwandskategorie) {
-    return '';
-  }
-  var html = '<div class="cost-estimate">';
-  html += '<div class="cost-estimate-head">';
-  html += '<span class="cost-estimate-label">Geschätzter Aufwand</span>';
-  var effort = effortLabel(result.aufwandskategorie);
-  if (effort) html += '<span class="cost-effort-badge ' + result.aufwandskategorie + '">' + effort + '</span>';
-  html += '</div>';
-  if (result.kosten_min !== undefined && result.kosten_max !== undefined) {
-    html += '<div class="cost-estimate-range">ca. ' + formatEuro(result.kosten_min) + ' € – ' + formatEuro(result.kosten_max) + ' €</div>';
-  }
-  if (result.kosten_hinweis) {
-    html += '<div class="cost-estimate-note">' + escapeHtml(result.kosten_hinweis) + '</div>';
-  }
-  html += '<div class="cost-estimate-disclaimer">Unverbindlicher Richtwert aus der Ferneinschätzung, kein Angebot. Endgültige Kosten hängen vom tatsächlichen Befund vor Ort ab.</div>';
-  html += '</div>';
-  return html;
-}
-
-function escapeHtml(str) {
-  var div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function iconCamera() {
-  return '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9a2 2 0 0 1 2-2h1.5l1-1.5h9l1 1.5H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>';
-}
-
-function onFilesSelected(e) {
-  var files = e.target.files;
-  if (!files || files.length === 0) return;
-
-  var cat = selectedCategories()[state.step];
-  var maxPhotos = cat.maxPhotos || 5;
-  var existing = state.images[cat.id] || [];
-  var slots = maxPhotos - existing.length;
-  var toProcess = Math.min(files.length, slots);
-
-  var pending = toProcess;
-  var newImages = [];
-
-  for (var i = 0; i < toProcess; i++) {
-    var reader = new FileReader();
-    reader.onload = (function (idx) {
-      return function (ev) {
-        compressImage(ev.target.result, function (compressed) {
-          newImages[idx] = compressed;
-          pending--;
-          if (pending === 0) {
-            var arr = state.images[cat.id] || [];
-            for (var j = 0; j < newImages.length; j++) arr.push(newImages[j]);
-            state.images[cat.id] = arr;
-            state.results[cat.id] = null;
-            render(); // Bilder anzeigen, aber KEINE Auto-Analyse
-          }
-        });
-      };
-    })(i);
-    reader.readAsDataURL(files[i]);
-  }
-}
-
-// Compress image via canvas before sending to API (keeps payload small)
-function compressImage(dataUrl, callback) {
-  var img = new Image();
-  img.onload = function () {
-    var maxDim = 1024;
-    var w = img.width, h = img.height;
-    if (w > h && w > maxDim) { h = Math.round(h * (maxDim / w)); w = maxDim; }
-    else if (h > maxDim) { w = Math.round(w * (maxDim / h)); h = maxDim; }
-
-    var canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    var ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, w, h);
-    var out = canvas.toDataURL('image/jpeg', 0.7);
-    callback(out);
-  };
-  img.src = dataUrl;
-}
-
-function analyzeImages(cat, dataUrls) {
-  var apiKey = getApiKey();
-  if (!apiKey) {
-    state.results[cat.id] = { status: 'amber', text: 'Kein API-Key gespeichert. Bitte oben rechts auf das Schlüssel-Symbol tippen und den Key eintragen.' };
-    render();
-    return;
-  }
-
-  state.loading = true;
-  render();
-
-  var content = [];
-  for (var i = 0; i < dataUrls.length; i++) {
-    content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: dataUrls[i].split(',')[1] } });
-  }
-
-  var photoHint;
-  if (dataUrls.length === 0) {
-    photoHint = 'Der Nutzer hat zur Kategorie "' + cat.title + '" keine Fotos hochgeladen, sondern nur eine Beschreibung. ';
-  } else if (dataUrls.length > 1) {
-    photoHint = 'Du bekommst ' + dataUrls.length + ' Fotos zur Kategorie "' + cat.title + '". Beziehe deine Einschätzung auf ALLE Fotos zusammen. ';
-  } else {
-    photoHint = 'Du bekommst ein Foto zur Kategorie "' + cat.title + '". ';
-  }
-
-  var systemPrompt = 'Du bist ein erfahrener KFZ-Sachverständiger und unterstützt Fahrzeughalter bei einer Vorab-Einschätzung vor dem Termin zur Hauptuntersuchung (HU). ' +
-    photoHint +
-    'Relevante Prüfpunkte: ' + cat.checkPoints + '. ';
-
-  if (cat.freeText && state.freeText) {
-    systemPrompt += 'Der Nutzer hat folgenden Hinweis gegeben, worauf besonders geachtet werden soll: "' + state.freeText + '". Berücksichtige diesen Hinweis in deiner Einschätzung. ';
-  }
-
-  if (dataUrls.length === 0) {
-    systemPrompt +=
-      'Da keine Fotos vorliegen, kannst du keine visuelle Einschätzung geben. Antworte NUR als JSON, ohne Markdown, ohne Codeblock, in folgendem Format: ' +
-      '{"status": "amber", "text": "Kurze, freundliche Rückmeldung auf Deutsch (1-3 Sätze), die den beschriebenen Punkt aufgreift und empfiehlt, diesen bei der Werkstatt anzusprechen bzw. ggf. noch ein Foto nachzuliefern."}';
-  } else if (cat.costEstimate) {
-    systemPrompt +=
-      'Bewerte AUSSCHLIESSLICH, was auf den Fotos erkennbar ist. Sei vorsichtig mit Ferndiagnosen und weise bei Unsicherheit darauf hin. ' +
-      'Zusätzlich sollst du eine GROBE Aufwands- und Kosteneinschätzung für eine fachgerechte Reparatur abgeben — ausdrücklich als unverbindlichen Richtwert für eine Ferneinschätzung, NICHT als Angebot oder verlässliche Kalkulation. ' +
-      'Berücksichtige bei der Einschätzung typische Stundensätze freier Werkstätten/Karosseriefachbetriebe in Deutschland sowie übliche Materialkosten. Wenn das Fahrzeug erkennbar ein Klassiker/Oldtimer ist, weise darauf hin, dass Material- und Aufwandskosten dort oft höher liegen können (Ersatzteilbeschaffung, Nachfertigung). ' +
-      'Antworte NUR als JSON, ohne Markdown, ohne Codeblock, in folgendem Format: ' +
-      '{"status": "green|amber|red", "text": "Kurze, verständliche Einschätzung in 1-4 Sätzen auf Deutsch, freundlich und konkret.", ' +
-      '"aufwandskategorie": "klein|mittel|gross", ' +
-      '"kosten_min": <Zahl in Euro>, "kosten_max": <Zahl in Euro>, ' +
-      '"kosten_hinweis": "Kurzer Satz auf Deutsch, der die Spanne einordnet und auf die Unverbindlichkeit hinweist."} ' +
-      '"green" = unauffällig, "amber" = sollte beobachtet bzw. von einer Werkstatt geprüft werden, "red" = wahrscheinlicher Mangel, der bei der HU zur Beanstandung führen könnte. ' +
-      '"klein" = punktuelle Ausbesserung/Kleinreparatur, "mittel" = größere Arbeiten mit Demontage/mehreren Arbeitsschritten, "gross" = strukturelle/umfangreiche Reparatur, fachliche Begutachtung vor Ort dringend empfohlen. ' +
-      'Wenn die Fotos die Beurteilung nicht zulassen (z.B. unscharf, falscher Bildausschnitt), antworte mit status "amber", lasse kosten_min/kosten_max weg und bitte im Text um bessere Fotos.';
-  } else {
-    systemPrompt +=
-      'Bewerte AUSSCHLIESSLICH, was auf den Fotos erkennbar ist. Sei vorsichtig mit Ferndiagnosen und weise bei Unsicherheit darauf hin. ' +
-      'Antworte NUR als JSON, ohne Markdown, ohne Codeblock, in folgendem Format: ' +
-      '{"status": "green|amber|red", "text": "Kurze, verständliche Einschätzung in 1-4 Sätzen auf Deutsch, freundlich und konkret."} ' +
-      '"green" = unauffällig, "amber" = sollte beobachtet bzw. von einer Werkstatt geprüft werden, "red" = wahrscheinlicher Mangel, der bei der HU zur Beanstandung führen könnte. ' +
-      'Wenn die Fotos die Beurteilung nicht zulassen (z.B. unscharf, falscher Bildausschnitt), antworte mit status "amber" und bitte im Text um bessere Fotos.';
-  }
-
-  content.push({ type: "text", text: systemPrompt });
-
-  fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-      "x-api-key": apiKey
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1200,
-      messages: [
-        {
-          role: "user",
-          content: content
-        }
-      ]
-    })
-  })
-  .then(function (res) { return res.json(); })
-  .then(function (data) {
-    if (data && data.error) {
-      throw new Error(data.error.message || 'API-Fehler');
-    }
-    var text = '';
-    if (data && data.content) {
-      for (var i = 0; i < data.content.length; i++) {
-        if (data.content[i].type === 'text') text += data.content[i].text;
-      }
-    }
-    text = text.replace(/```json|```/g, '').trim();
-
-    var parsed;
-    try {
-      parsed = JSON.parse(text);
-    } catch (err) {
-      parsed = { status: 'amber', text: 'Die Analyse konnte nicht eindeutig ausgewertet werden. Bitte sieh dir die Fotos noch einmal an oder lass diesen Punkt von der Werkstatt prüfen.' };
-    }
-
-    if (!parsed.status || !parsed.text) {
-      parsed = { status: 'amber', text: 'Keine eindeutige Einschätzung möglich. Bitte diesen Punkt bei der Werkstatt ansprechen.' };
-    }
-
-    state.results[cat.id] = parsed;
-    state.loading = false;
-    render();
-  })
-  .catch(function (err) {
-    var msg = 'Die Analyse ist fehlgeschlagen. Du kannst trotzdem fortfahren — dieser Punkt wird im Report als "ungeprüft" markiert.';
-    if (err && err.message && err.message.indexOf('credit') !== -1) {
-      msg = 'API-Guthaben aufgebraucht. Bitte beim Anbieter aufladen.';
-    } else if (err && err.message && (err.message.indexOf('auth') !== -1 || err.message.indexOf('key') !== -1)) {
-      msg = 'API-Key ungültig. Bitte oben rechts auf das Schlüssel-Symbol tippen und Key prüfen.';
-    }
-    state.results[cat.id] = { status: 'amber', text: msg };
-    state.loading = false;
-    render();
-  });
-}
-
-function overallStatus() {
-  var hasRed = false, hasAmber = false;
-  for (var i = 0; i < CATEGORIES.length; i++) {
-    var r = state.results[CATEGORIES[i].id];
-    if (!r) continue;
-    if (r.status === 'red') hasRed = true;
-    if (r.status === 'amber') hasAmber = true;
-  }
-  if (hasRed) return 'red';
-  if (hasAmber) return 'amber';
-  return 'green';
-}
-
-function overallLabel(status) {
-  if (status === 'green') return 'Gute Chancen<br>auf den Termin';
-  if (status === 'amber') return 'Ein paar Punkte<br>vorab klären';
-  return 'Vor dem Termin<br>handeln';
-}
-
-function renderAnalyseScreen() {
-  els.stepMeta.textContent = 'ANALYSE';
-  var chosen = selectedCategories();
-
-  // Ladescreen anzeigen
-  els.main.innerHTML =
-    '<div style="text-align:center;padding:60px 24px 40px;">' +
-    '<div style="font-size:52px;margin-bottom:20px;">🔍</div>' +
-    '<div style="font-family:Space Grotesk,sans-serif;font-weight:700;font-size:22px;color:var(--ink);margin-bottom:10px;">Ihre Fotos werden ausgewertet…</div>' +
-    '<div style="font-size:14px;color:var(--steel);margin-bottom:32px;">Die KI analysiert alle ' + chosen.length + ' Prüfbereiche zusammen.<br>Das dauert ca. 10–20 Sekunden.</div>' +
-    '<div id="analyseProgress" style="max-width:300px;margin:0 auto;"></div>' +
-    '</div>';
-
-  els.footer.innerHTML = '<button class="btn btn-primary" disabled>Analyse läuft …</button>';
-
-  // Sequenziell alle Kategorien analysieren
-  var results = {};
-  var idx = 0;
-
-  function analyseNext() {
-    if (idx >= chosen.length) {
-      // Alle fertig → Report
-      state.results = results;
-      state.loading = false;
-      state.step = chosen.length; // Zahl → renderReport
-      trackLead('checked');
-      render();
-      return;
-    }
-
-    var cat = chosen[idx];
-    var imgs = state.images[cat.id] || [];
-
-    // Progress Update
-    var prog = document.getElementById('analyseProgress');
-    if (prog) {
-      var done = idx;
-      var total = chosen.length;
-      var pct = Math.round((done / total) * 100);
-      prog.innerHTML =
-        '<div style="background:#e8e4dc;border-radius:8px;height:8px;overflow:hidden;margin-bottom:12px;">' +
-        '<div style="background:var(--ink);height:100%;width:' + pct + '%;transition:width 0.4s;border-radius:8px;"></div></div>' +
-        '<div style="font-size:13px;color:var(--steel);">⏳ ' + cat.title + ' …</div>';
-    }
-
-    var apiKey = getApiKey();
-    if (!apiKey) {
-      results[cat.id] = { status: 'amber', text: 'Kein API-Key. Bitte oben rechts eingeben.' };
-      idx++; analyseNext(); return;
-    }
-
-    if (imgs.length === 0 && !cat.freeText) {
-      // Übersprungen
-      idx++; analyseNext(); return;
-    }
-
-    var content = [];
-    for (var i = 0; i < imgs.length; i++) {
-      content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imgs[i].split(',')[1] } });
-    }
-
-    var photoHint = imgs.length > 1
-      ? 'Du bekommst ' + imgs.length + ' Fotos zur Kategorie "' + cat.title + '". Beziehe deine Einschätzung auf ALLE Fotos zusammen. '
-      : imgs.length === 1 ? 'Du bekommst ein Foto zur Kategorie "' + cat.title + '". '
-      : 'Keine Fotos, nur eine Beschreibung zur Kategorie "' + cat.title + '". ';
-
-    var systemPrompt = 'Du bist ein erfahrener KFZ-Sachverständiger und unterstützt Fahrzeughalter bei einer Vorab-Einschätzung vor dem HU-Termin. ' +
-      photoHint + 'Relevante Prüfpunkte: ' + cat.checkPoints + '. ';
-
-    if (cat.freeText && state.freeText) {
-      systemPrompt += 'Nutzerhinweis: "' + state.freeText + '". ';
-    }
-
-    if (cat.costEstimate) {
-      systemPrompt += 'Bewerte nur was sichtbar ist. Gib zusätzlich eine grobe Kosteneinschätzung (unverbindlich). ' +
-        'Antworte NUR als JSON: {"status":"green|amber|red","text":"1-4 Sätze DE","aufwandskategorie":"klein|mittel|gross","kosten_min":Zahl,"kosten_max":Zahl,"kosten_hinweis":"1 Satz DE"}';
-    } else {
-      systemPrompt += 'Bewerte nur was sichtbar ist. ' +
-        'Antworte NUR als JSON: {"status":"green|amber|red","text":"1-4 Sätze DE"} ' +
-        'green=unauffällig, amber=beobachten/prüfen lassen, red=wahrscheinlicher HU-Mangel.';
-    }
-
-    content.push({ type: 'text', text: systemPrompt });
-
-    fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-        'x-api-key': apiKey
-      },
-      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1200, messages: [{ role: 'user', content: content }] })
-    })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      var text = '';
-      if (data && data.content) {
-        for (var i = 0; i < data.content.length; i++) {
-          if (data.content[i].type === 'text') text += data.content[i].text;
-        }
-      }
-      text = text.replace(/```json|```/g, '').trim();
-      var parsed;
-      try { parsed = JSON.parse(text); }
-      catch(e) { parsed = { status: 'amber', text: 'Analyse nicht auswertbar. Bitte bei der Werkstatt ansprechen.' }; }
-      if (!parsed.status) parsed = { status: 'amber', text: 'Keine eindeutige Einschätzung.' };
-      results[cat.id] = parsed;
-      idx++; analyseNext();
-    })
-    .catch(function(err) {
-      results[cat.id] = { status: 'amber', text: 'Analyse fehlgeschlagen. Bitte bei der Werkstatt prüfen lassen.' };
-      idx++; analyseNext();
-    });
-  }
-
-  analyseNext();
-}
-
-function calcOverallProb() {
-  // Wahrscheinlichkeit über alle TOP3 mit Checkliste
-  var top3 = ['beleuchtung', 'bremsanlage', 'reifen'];
-  var totalItems = 0; var checkedItems = 0;
-  for (var i = 0; i < top3.length; i++) {
-    var cat = getCategoryById(top3[i]);
-    if (!cat || !cat.checklist) continue;
-    var catChecks = state.checks[top3[i]] || {};
-    totalItems += cat.checklist.length;
-    for (var j = 0; j < cat.checklist.length; j++) {
-      if (catChecks[cat.checklist[j].id]) checkedItems++;
-    }
-  }
-  if (totalItems === 0) return 0;
-  return Math.round((checkedItems / totalItems) * 90);
-}
-
-function renderReport() {
-  els.stepMeta.textContent = 'AUSWERTUNG';
-
-  var status   = overallStatus();
-  var prob     = calcOverallProb();
-  var probColor = prob >= 80 ? 'var(--green)' : prob >= 50 ? 'var(--amber)' : 'var(--red)';
-  var chosen   = selectedCategories();
-
-  // WhatsApp vorbereiten
-  var ampelText = status === 'green' ? '\u{1F7E2} Gr\u00FCn \u2013 HU-bereit'
-                : status === 'amber' ? '\u{1F7E1} Gelb \u2013 M\u00E4ngel vorhanden'
-                : '\u{1F534} Rot \u2013 Erhebliche M\u00E4ngel';
-  var fahrzeugKurz = '';
-  if (chosen.length > 0 && state.results[chosen[0].id]) {
-    var txt = state.results[chosen[0].id].text || '';
-    var firstDot = txt.indexOf('.');
-    fahrzeugKurz = firstDot > 0 ? txt.substring(0, firstDot) : txt.substring(0, 60);
-    if (fahrzeugKurz.length > 60) fahrzeugKurz = fahrzeugKurz.substring(0, 60) + '\u2026';
-  }
-  var kostenKurz = '';
-  for (var ki = 0; ki < chosen.length; ki++) {
-    var kr = state.results[chosen[ki].id];
-    if (kr && kr.kosten_min && kr.kosten_max) {
-      kostenKurz = 'ca. ' + kr.kosten_min + ' \u2013 ' + kr.kosten_max + ' \u20AC'; break;
-    }
-  }
-  var waPhone = '491727409769';
-  var kzHinweis = state.kennzeichen ? '\n\uD83D\uDD11 Kennzeichen: ' + state.kennzeichen : '';
-  var terminBg = status === 'green' ? 'var(--green)' : status === 'amber' ? 'var(--amber)' : 'var(--red)';
-
-  // ── BLOCK 1: Gesamtergebnis ──
-  var html = '';
-  html += '<div class="report-header">';
-  html += '<div class="plakette ' + status + '"><div class="plakette-label">' + overallLabel(status) + '</div></div>';
-  html += '<div class="report-title">Dein Vorab-Check</div>';
-  html += '<div class="report-sub">Einsch\u00E4tzung vor deinem HU-Termin</div>';
-  html += '</div>';
-
-  if (prob > 0) {
-    html += '<div style="background:#fff;border-radius:14px;padding:14px 18px;margin-bottom:18px;border:1.5px solid #e8e4dc;">';
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">';
-    html += '<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--steel);">Selbst-Check Gesamt</div>';
-    html += '<div style="font-family:Space Grotesk,sans-serif;font-weight:700;font-size:30px;color:' + probColor + ';line-height:1;">' + prob + ' %</div>';
-    html += '</div>';
-    html += '<div style="height:6px;background:#f0ece4;border-radius:3px;overflow:hidden;margin-bottom:5px;">';
-    html += '<div style="height:100%;width:' + prob + '%;background:' + probColor + ';border-radius:3px;"></div>';
-    html += '</div>';
-    html += '<div style="font-size:10px;color:#ccc;">Unverbindlich \u00B7 ersetzt keine amtliche \u00A729-Pr\u00FCfung</div>';
-    html += '</div>';
-  }
-
-  // ── BLOCK 2: Einzelergebnisse kompakt ──
-  for (var i = 0; i < chosen.length; i++) {
-    var cat = chosen[i];
-    var r   = state.results[cat.id];
-    var checkSummary = '';
-    if (cat.checklist && cat.checklist.length > 0) {
-      var catChecks  = state.checks[cat.id] || {};
-      var checkedCnt = 0;
-      for (var ci = 0; ci < cat.checklist.length; ci++) {
-        if (catChecks[cat.checklist[ci].id]) checkedCnt++;
-      }
-      var total    = cat.checklist.length;
-      var pct      = Math.round(checkedCnt / total * 90);
-      var pctColor = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)';
-      checkSummary = '<div style="display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid #f0ece4;">'
-        + '<div style="flex:1;height:4px;background:#f0ece4;border-radius:2px;overflow:hidden;">'
-        + '<div style="height:100%;width:' + pct + '%;background:' + pctColor + ';border-radius:2px;"></div></div>'
-        + '<div style="font-size:11px;font-weight:700;color:' + pctColor + ';white-space:nowrap;">' + checkedCnt + '/' + total + ' gepr\u00FCft</div>'
-        + '</div>';
-    }
-    html += '<div class="report-item">';
-    html += '<div class="report-item-head"><div class="report-item-name">' + cat.title + '</div>';
-    html += '<span class="status-dot ' + (r ? r.status : '') + '" style="' + (!r ? 'background:#d4cfc4' : '') + '"></span>';
-    html += '</div>';
-    html += '<div class="report-item-text">' + (r ? escapeHtml(r.text) : '\u00DCbersprungen \u2014 wird bei der HU regul\u00E4r gepr\u00FCft.') + '</div>';
-    if (r) html += renderCostEstimate(r);
-    html += checkSummary;
-    html += '</div>';
-  }
-
-  html += '<div class="partner-note"><strong>Empfehlung</strong> ';
-  html += 'Gut vorbereitet f\u00FCr deinen Termin bei ' + escapeHtml(partner.name) + '.';
-  if (partner.contact) html += ' Kontakt: ' + escapeHtml(partner.contact);
-  html += '</div>';
-  html += '<div class="disclaimer">Automatisierte Foto-Analyse \u00B7 ersetzt keine amtliche \u00A729-Pr\u00FCfung.</div>';
-
-  // ── BLOCK 3: Termin-Block einmalig ganz unten ──
-  var slots = ['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00'];
-  var slotOptions = '<option value="">Uhrzeit</option>';
-  for (var si = 0; si < slots.length; si++) slotOptions += '<option>' + slots[si] + '</option>';
-
-  html += '<div style="background:#fff;border-radius:16px;border:2px solid ' + terminBg + ';padding:18px;margin-top:20px;">';
-  html += '<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;">\uD83D\uDCC5 Terminwunsch angeben</div>';
-  html += '<div style="font-size:12px;color:var(--steel);margin-bottom:14px;">Gib 2 Wunschtermine an \u2013 wir best\u00E4tigen dir einen davon schnellstm\u00F6glich per WhatsApp.</div>';
-  html += '<div style="margin-bottom:10px;">';
-  html += '<div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--steel);margin-bottom:5px;">1. Wunschtermin</div>';
-  html += '<div style="display:flex;gap:8px;">';
-  html += '<input type="date" id="termin1Date" style="flex:1;padding:10px;border:1px solid #e8e4dc;border-radius:8px;font-size:14px;background:#fafafa;">';
-  html += '<select id="termin1Time" style="width:120px;padding:10px;border:1px solid #e8e4dc;border-radius:8px;font-size:14px;background:#fafafa;">' + slotOptions + '</select>';
-  html += '</div></div>';
-  html += '<div style="margin-bottom:14px;">';
-  html += '<div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--steel);margin-bottom:5px;">2. Wunschtermin</div>';
-  html += '<div style="display:flex;gap:8px;">';
-  html += '<input type="date" id="termin2Date" style="flex:1;padding:10px;border:1px solid #e8e4dc;border-radius:8px;font-size:14px;background:#fafafa;">';
-  html += '<select id="termin2Time" style="width:120px;padding:10px;border:1px solid #e8e4dc;border-radius:8px;font-size:14px;background:#fafafa;">' + slotOptions + '</select>';
-  html += '</div></div>';
-  html += '<div onclick="sendTerminWunsch()" style="background:' + terminBg + ';color:#fff;padding:15px;border-radius:12px;text-align:center;font-family:Space Grotesk,sans-serif;font-weight:700;font-size:15px;cursor:pointer;">Terminwunsch absenden →</div>';
-  html += '</div>';
-
-  els.main.innerHTML = html;
-
-  // Footer: nur PDF + Neustart
-  els.footer.innerHTML =
-    '<button class="btn btn-primary" id="pdfBtn" style="background:var(--ink);color:var(--paper);margin-bottom:10px;">Report als PDF speichern</button>' +
-    '<button class="btn-skip" id="restartBtn" style="margin-top:4px;">Neuen Check starten</button>';
-
-  document.getElementById('pdfBtn').onclick = function() { exportPdf(status); };
-  document.getElementById('restartBtn').onclick = function() {
-    state.step = -1; state.selectedOrder = []; state.images = {};
-    state.results = {}; state.freeText = ''; state.loading = false; render();
-  };
-
-  buildProgress();
-  var segs = els.progressTrack.children;
-  for (var s = 0; s < segs.length; s++) segs[s].className = 'progress-seg done';
-}
-
-function sendTerminWunsch() {
-  var d1 = document.getElementById('termin1Date');
-  var t1 = document.getElementById('termin1Time');
-  var d2 = document.getElementById('termin2Date');
-  var t2 = document.getElementById('termin2Time');
-  var termin1 = d1 && d1.value ? fmtDateDE(d1.value) + (t1 && t1.value ? ' ' + t1.value + ' Uhr' : '') : '';
-  var termin2 = d2 && d2.value ? fmtDateDE(d2.value) + (t2 && t2.value ? ' ' + t2.value + ' Uhr' : '') : '';
-  if (!termin1 && !termin2) { alert('Bitte mindestens einen Wunschtermin angeben.'); return; }
-  var status    = overallStatus();
-  var ampel     = status === 'green' ? 'HU-bereit' : status === 'amber' ? 'M\u00E4ngel vorhanden' : 'Erhebliche M\u00E4ngel';
-  var kzHinweis = state.kennzeichen ? '\nKZ: ' + state.kennzeichen : '';
-  var msg = 'Hallo,\n\nHU-Vorab-Check: ' + ampel + kzHinweis +
-    '\n\nMeine Wunschtermine:' +
-    (termin1 ? '\n1. ' + termin1 : '') +
-    (termin2 ? '\n2. ' + termin2 : '') +
-    '\n\nPDF-Report liegt vor. Vielen Dank!';
-  trackLead('booked');
-  window.open('https://wa.me/491727409769?text=' + encodeURIComponent(msg), '_blank');
-}
-
-function fmtDateDE(iso) {
-  if (!iso) return '';
-  var p = iso.split('-');
-  return p[2] + '.' + p[1] + '.' + p[0];
-}
-
-
-function statusColor(status) {
-  if (status === 'green') return [45, 140, 95];
-  if (status === 'amber') return [224, 168, 58];
-  if (status === 'red') return [192, 57, 43];
-  return [212, 207, 196];
-}
-
-function exportPdf(overall) {
-  var jsPDFCtor = window.jspdf && window.jspdf.jsPDF;
-  if (!jsPDFCtor) {
-    alert('PDF-Bibliothek konnte nicht geladen werden. Bitte Internetverbindung prüfen und erneut versuchen.');
-    return;
-  }
-
-  var doc = new jsPDFCtor({ unit: 'mm', format: 'a4' });
-  var pageW = doc.internal.pageSize.getWidth();
-  var margin = 18;
-  var y = 22;
-
-  // Header
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  doc.setTextColor(26, 35, 50);
-  doc.text('HU-Vorab-Check', margin, y);
-
-  y += 6;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(91, 107, 125);
-  var dateStr = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  doc.text('Erstellt am ' + dateStr, margin, y);
-
-  // Overall status badge
-  y += 14;
-  var badgeColor = statusColor(overall);
-  doc.setFillColor(badgeColor[0], badgeColor[1], badgeColor[2]);
-  doc.circle(margin + 6, y, 6, 'F');
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.setTextColor(26, 35, 50);
-  var overallText = overall === 'green' ? 'Gute Chancen auf den HU-Termin'
-    : overall === 'amber' ? 'Einige Punkte vorab klären'
-    : 'Vor dem Termin handeln';
-  doc.text(overallText, margin + 16, y + 1.5);
-
-  y += 12;
-  doc.setDrawColor(228, 224, 216);
-  doc.setLineWidth(0.4);
-  doc.line(margin, y, pageW - margin, y);
-  y += 10;
-
-  // Categories
-  var chosen = selectedCategories();
-  for (var i = 0; i < chosen.length; i++) {
-    var cat = chosen[i];
-    var result = state.results[cat.id];
-    var imgs = state.images[cat.id] || [];
-
-    var blockHeight = 28;
-    if (y + blockHeight > 280) {
-      doc.addPage();
-      y = 22;
-    }
-
-    // Thumbnails (max 5, side by side, scaled down)
-    var thumbSize = 22;
-    var thumbGap = 2;
-    var maxThumbs = Math.min(imgs.length, 3); // PDF zeigt max 3 Thumbnails pro Zeile zur Platzersparnis
-
-    if (imgs.length > 0) {
-      for (var ti = 0; ti < maxThumbs; ti++) {
-        var tSize = maxThumbs > 1 ? 14 : thumbSize;
-        var tY = y + ti * (tSize + thumbGap);
-        try {
-          doc.addImage(imgs[ti], 'JPEG', margin, tY, tSize, tSize);
-        } catch (e) {
-          doc.setDrawColor(228, 224, 216);
-          doc.rect(margin, tY, tSize, tSize);
-        }
-      }
-      var usedThumbSize = maxThumbs > 1 ? (maxThumbs * 14 + (maxThumbs - 1) * thumbGap) : thumbSize;
-    } else {
-      doc.setDrawColor(228, 224, 216);
-      doc.setFillColor(247, 245, 240);
-      doc.rect(margin, y, thumbSize, thumbSize, 'FD');
-      doc.setFontSize(7);
-      doc.setTextColor(150, 150, 150);
-      doc.text('Übersprungen', margin + 2, y + thumbSize / 2);
-      var usedThumbSize = thumbSize;
-    }
-
-    var textX = margin + thumbSize + 6;
-    var textW = pageW - margin - textX;
-
-    // Title + status dot
-    var dotColor = result ? statusColor(result.status) : [212, 207, 196];
-    doc.setFillColor(dotColor[0], dotColor[1], dotColor[2]);
-    doc.circle(textX + 1.5, y + 3, 1.5, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(26, 35, 50);
-    doc.text(cat.title, textX + 5, y + 4);
-
-    // Body text
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(91, 107, 125);
-    var bodyText = result ? result.text : 'Übersprungen — wird bei der HU regulär geprüft.';
-    var lines = doc.splitTextToSize(bodyText, textW);
-    doc.text(lines, textX + 5, y + 10);
-
-    var textBottom = y + 10 + lines.length * 4.2;
-
-    // Cost estimate (falls vorhanden)
-    if (result && (result.kosten_min !== undefined || result.aufwandskategorie)) {
-      var costLines = [];
-      var costHeader = 'Geschätzter Aufwand';
-      if (result.aufwandskategorie) {
-        var effortMap = { klein: 'Kleinreparatur', mittel: 'Größere Arbeiten', gross: 'Umfangreiche Reparatur' };
-        costHeader += ' — ' + (effortMap[result.aufwandskategorie] || result.aufwandskategorie);
-      }
-      costLines.push(costHeader);
-      if (result.kosten_min !== undefined && result.kosten_max !== undefined) {
-        costLines.push('ca. ' + Number(result.kosten_min).toLocaleString('de-DE') + ' € – ' + Number(result.kosten_max).toLocaleString('de-DE') + ' €');
-      }
-      if (result.kosten_hinweis) {
-        var hinweisLines = doc.splitTextToSize(result.kosten_hinweis, textW);
-        for (var hl = 0; hl < hinweisLines.length; hl++) costLines.push(hinweisLines[hl]);
-      }
-      var disclaimerLines2 = doc.splitTextToSize('Unverbindlicher Richtwert, kein Angebot. Endgültige Kosten hängen vom Befund vor Ort ab.', textW);
-
-      var costY = textBottom + 3;
-      doc.setDrawColor(236, 231, 220);
-      doc.setLineWidth(0.3);
-      doc.line(textX + 5, costY, textX + 5 + textW - 5, costY);
-      costY += 4;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.5);
-      doc.setTextColor(26, 35, 50);
-      doc.text(costLines[0], textX + 5, costY);
-      costY += 4.5;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
-      for (var ci = 1; ci < costLines.length; ci++) {
-        doc.text(costLines[ci], textX + 5, costY);
-        costY += 4;
-      }
-
-      doc.setFont('helvetica', 'italic');
-      doc.setFontSize(7);
-      doc.setTextColor(150, 150, 150);
-      doc.text(disclaimerLines2, textX + 5, costY);
-      costY += disclaimerLines2.length * 3.4;
-
-      textBottom = costY;
-    }
-
-    var consumed = Math.max(usedThumbSize, (textBottom - y) + 4) + 6;
-    y += consumed;
-  }
-
-  // Partner note
-  var partnerText = 'Mit diesem Ergebnis bist du gut vorbereitet für deinen HU-Termin bei ' + partner.name + '.';
-  if (partner.contact) {
-    partnerText += ' Bei Fragen zu den markierten Punkten helfen wir dir gerne vorab weiter: ' + partner.contact + '.';
-  } else {
-    partnerText += ' Bei Fragen zu den markierten Punkten helfen wir dir gerne vorab weiter.';
-  }
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  var partnerLines = doc.splitTextToSize(partnerText, pageW - 2 * margin - 10);
-  var partnerBoxHeight = 14 + partnerLines.length * 4.2;
-
-  if (y + partnerBoxHeight + 6 > 280) { doc.addPage(); y = 22; }
-  y += 4;
-  doc.setFillColor(26, 35, 50);
-  doc.roundedRect(margin, y, pageW - 2 * margin, partnerBoxHeight, 2, 2, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(247, 245, 240);
-  doc.text('Empfehlung deiner Werkstatt', margin + 5, y + 8);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.text(partnerLines, margin + 5, y + 14);
-  y += partnerBoxHeight + 8;
-
-  // Disclaimer
-  if (y + 16 > 290) { doc.addPage(); y = 22; }
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(150, 150, 150);
-  var disclaimerLines = doc.splitTextToSize(
-    'Diese Einschätzung basiert auf einer automatisierten Foto-Analyse und ersetzt keine amtliche Prüfung. Sie dient ausschließlich der Vorbereitung auf deinen Termin.',
-    pageW - 2 * margin
-  );
-  doc.text(disclaimerLines, margin, y);
-
-  doc.save('hu-vorab-check.pdf');
-}
-
-// ---------------------------------------------------------
-// API-Key Modal
-// ---------------------------------------------------------
-function openKeyModal() {
-  document.getElementById('keyInput').value = getApiKey();
-  document.getElementById('keyError').textContent = '';
-  document.getElementById('keyModal').className = 'modal-overlay visible';
-}
-function closeKeyModal() {
-  document.getElementById('keyModal').className = 'modal-overlay';
-}
-function saveKeyFromModal() {
-  var val = document.getElementById('keyInput').value.trim();
-  if (val.indexOf('sk-ant-') !== 0) {
-    document.getElementById('keyError').textContent = 'Key muss mit sk-ant- beginnen.';
-    return;
-  }
-  saveApiKey(val);
-  closeKeyModal();
-}
-
-document.getElementById('keyBtn').addEventListener('click', openKeyModal);
-document.getElementById('keyCancelBtn').addEventListener('click', closeKeyModal);
-document.getElementById('keySaveBtn').addEventListener('click', saveKeyFromModal);
-
-// Beim ersten Aufruf direkt zur Key-Eingabe, falls noch keiner gespeichert ist
-if (!getApiKey()) {
-  openKeyModal();
-}
-
-render();
-</script>
+<div class="section-divider"></div>
+
+<!-- TOOLS -->
+<section class="tools-section">
+  <div class="section-header">
+    <div class="section-label">Verfügbare Tools</div>
+    <div class="section-count">3 Tools</div>
+  </div>
+
+  <div class="tools-grid">
+
+    <!-- CrashGuide -->
+    <a href="#" class="tool-card">
+      <div class="tool-card-top">
+        <div class="tool-icon">🚨</div>
+        <span class="tool-badge badge-live">Live</span>
+      </div>
+      <div class="tool-name">CrashGuide</div>
+      <div class="tool-tagline">Unfall gehabt? KI analysiert den Schaden, schätzt die Kosten und berechnet deinen SF-Klassen-Verlust — bevor du mit der Versicherung sprichst.</div>
+      <div class="tool-footer">
+        <div class="tool-price">Kostenlos · Vollanalyse <strong>ab € 3,99</strong></div>
+        <div class="tool-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- HU-Vorab-Check -->
+    <a href="#" class="tool-card">
+      <div class="tool-card-top">
+        <div class="tool-icon">🔧</div>
+        <span class="tool-badge badge-live">Live</span>
+      </div>
+      <div class="tool-name">HU-Vorab-Check</div>
+      <div class="tool-tagline">Hauptuntersuchung steht an? Prüfe vorab die häufigsten Mängel und geh bestens vorbereitet zum TÜV oder GTÜ.</div>
+      <div class="tool-footer">
+        <div class="tool-price">Kostenlos nutzbar</div>
+        <div class="tool-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- AutoAI — Featured -->
+    <a href="#" class="tool-card featured">
+      <div class="tool-icon">🔍</div>
+      <div class="tool-body">
+        <div class="tool-meta">
+          <div class="tool-name">AutoAI</div>
+          <span class="tool-badge badge-beta">Beta</span>
+        </div>
+        <div class="tool-tagline">Auto kaufen oder verkaufen? KI analysiert den aktuellen Marktwert, prüft die Ausstattung und erstellt dir ein professionelles Bewertungsdossier — in Sekunden.</div>
+        <div class="tool-footer">
+          <div class="tool-price">Kostenlos · Vollanalyse <strong>ab € 4,99</strong></div>
+          <div class="tool-arrow">→</div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">© 2026 <span>Mein-Auto-Assistent.de</span> · Ein Projekt von rc-digital.de</div>
+  <div class="footer-links">
+    <a href="#">Impressum</a>
+    <a href="#">Datenschutz</a>
+    <a href="https://rc-digital.de">rc-digital.de</a>
+  </div>
+</footer>
 
 </body>
 </html>
